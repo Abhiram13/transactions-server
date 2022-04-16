@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "tsc": "tsc",
+    "build": "tsc --build",
     "dev": "ts-node-dev --respawn --transpile-only index.ts",
     "start": "node build/index.js"
   },
