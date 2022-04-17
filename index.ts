@@ -1,7 +1,7 @@
 import express from 'express';
 import bodyparser from "body-parser";
 import Database from "./src/helpers/database";
-import transactionRouter from './src/routes/transactions';
+import transactionRouter from './src/routes/transactions.router';
 const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 3001;

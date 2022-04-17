@@ -8,7 +8,7 @@ export function AddTransactionCheck(req: Request, res: Response, next: NextFunct
 
    function dueCheck(): boolean {
       if (body.due) {
-         if (Object.keys(body.due_details).length === 0 || !body.due_details.from_person || !body.due_details.to_person) {
+         if (!("due_details" in body) || Object.keys(body.due_details).length === 0 || !body.due_details.from_person || !body.due_details.to_person) {
             return false;
          }
       }
