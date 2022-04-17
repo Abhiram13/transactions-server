@@ -16,7 +16,7 @@ export interface ITransactionPayload extends ITransaction {
    due_details: IDueDetails;
 }
 
-interface IDueDetails {
+export interface IDueDetails {
    from_person: string;
    to_person: string;
 }
