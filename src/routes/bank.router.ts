@@ -21,3 +21,5 @@ bankRouter.post("/add", async (req, res) => {
       res.status(400).send(e).end();
    }
 });
+
+export default bankRouter;

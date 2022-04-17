@@ -20,4 +20,6 @@ categoryRouter.post("/add", async (req, res) => {
    } catch (e) {
       res.status(400).send(e).end();
    }
-})
+});
+
+export default categoryRouter;
