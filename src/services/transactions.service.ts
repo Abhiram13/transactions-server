@@ -3,10 +3,20 @@ import {ITransactionPayload, ITransaction, IDueDetails} from "../types/transacti
 import {Query} from "../helpers/query";
 import {QueryResult} from "pg";
 import {Request, Response} from 'express';
+import {ApiErrorHandler, ApiResponse} from "../helpers/response";
 
 export async function ListofTransactions(req: Request, res: Response) {
-   const transactions: ITransaction[] = await (await Query(`SELECT amount, type, description, due, id, to_char(date, 'YYYY-MM-DD') as date FROM transactions`)).rows;
-   res.send(transactions).end();
+   ApiErrorHandler(res, async () => {
+      const debitSum = `CASE WHEN t.type ILIKE 'debit' THEN amount END`;
+      const creditSum = `CASE WHEN t.type ILIKE 'credit' THEN amount END`;
+      const subQuery = `SELECT json_build_object('amount', tr.amount, 'description', tr.description, 'type', tr.type) FROM transactions tr WHERE tr.date = t.date`;
+      const mainQuery = `
+         SELECT to_char(date, 'YYYY-MM-DD') as date, COALESCE(SUM(${debitSum}), 0) as debit, COALESCE(SUM(${creditSum}), 0) as credit,
+         array(${subQuery}) as transactions FROM transactions t GROUP BY t.date
+      `;
+      const transactions: ITransaction[] = await (await Query(mainQuery)).rows;
+      ApiResponse<ITransaction[]>(transactions, res, 200);
+   });
 }
 
 async function addDues(transactionId: number, dueDetails: IDueDetails): Promise<boolean> {
