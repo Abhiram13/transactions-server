@@ -1,6 +1,7 @@
 //@ts-check
 import {ITransactionPayload} from "../types/transactions.dto";
 import {Request, Response, NextFunction} from 'express';
+import {ApiResponse} from "../helpers/response";
 
 export function AddTransactionCheck(req: Request, res: Response, next: NextFunction): void {
    const body: ITransactionPayload = req.body;
@@ -17,31 +18,31 @@ export function AddTransactionCheck(req: Request, res: Response, next: NextFunct
    }
 
    if (!_dueCheck) {
-      res.status(400).send("Due details are missing").end();
+      ApiResponse<string>("Due details are missing", res, 400);
       return;
    } else if (!body.amount) {
-      res.status(400).send("Amount is required").end();
+      ApiResponse<string>("Amount is required", res, 400);      
       return;
    } else if (!body.category_id) {
-      res.status(400).send("category Id is required").end();
+      ApiResponse<string>("category Id is required", res, 400);      
       return;
    } else if (!body.date) {
-      res.status(400).send("Date is required").end();
+      ApiResponse<string>("Date is required", res, 400); 
       return;
    } else if (!body.description) {
-      res.status(400).send("Description is required").end();
+      ApiResponse<string>("Description is required", res, 400);      
       return;
    } else if (body.due === undefined || body.due === null) {
-      res.status(400).send("Due is required").end();
+      ApiResponse<string>("Due is required", res, 400);      
       return;
    } else if (!body.from_bank_id) {
-      res.status(400).send("From Bank is required").end();
+      ApiResponse<string>("From Bank is required", res, 400);      
       return;
    } else if (!body.type) {
-      res.status(400).send("Transaction type is required").end();
+      ApiResponse<string>("Transaction type is required", res, 400);      
       return;
    } else if (!body.to_bank_id) {
-      res.status(400).send("To Bank is required").end();
+      ApiResponse<string>("To Bank is required", res, 400); 
       return;
    }
 
