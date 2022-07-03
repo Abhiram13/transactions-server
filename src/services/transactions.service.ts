@@ -30,23 +30,33 @@ async function addDues(transactionId: number, dueDetails: IDueDetails): Promise<
    return false;
 }
 
-export async function addTransaction(req: Request, res: Response): Promise<boolean> {
-   const payload: ITransactionPayload = req.body;
-   const insertQuery = `
-      INSERT INTO transactions 
-      (amount, type, date, description, due, from_bank_id, category_id, to_bank_id) 
-      VALUES (${payload.amount}, '${payload.type}', '${payload.date}', '${payload.description}', ${payload.due}, ${payload.from_bank_id}, ${payload.category_id}, ${payload.to_bank_id}) 
-      RETURNING id`;
-   const result: QueryResult<any> = await Query(insertQuery);
+export async function addTransaction(req: Request, res: Response): Promise<void> {
+   ApiErrorHandler(res, async () => {
+      const payload: ITransactionPayload = req.body;
+      const insertQuery = `
+         INSERT INTO transactions (amount, type, date, description, due, from_bank_id, category_id, to_bank_id) 
+         VALUES (${payload.amount}, '${payload.type}', '${payload.date}', '${payload.description}', ${payload.due}, ${payload.from_bank_id}, ${payload.category_id}, ${payload.to_bank_id}) 
+         RETURNING id`;
+      
+      const result: QueryResult<any> = await Query(insertQuery);
 
-   if (result.rowCount && result.rows.length > 0) {
-      if (payload.due) {
-         const transactionId: number = result.rows[0].id;
-         return await addDues(transactionId, payload.due_details);
+      if (result.rowCount && result.rows.length > 0) {
+         if (payload.due) {
+            const transactionId: number = result.rows[0].id;
+            const isDueAdded: boolean = await addDues(transactionId, payload.due_details);
+
+            isDueAdded
+               ? ApiResponse<string>("Transaction and due successfully added", res, 200)
+               : ApiResponse<string>("Transaction is successfully added but adding due is failed", res, 300);
+            
+            return;
+         }
+
+         ApiResponse<string>("Transaction successfully added", res, 200);
+         return;
       }
 
-      return true;
-   }
-
-   return false;
+      ApiResponse<string>("Adding transaction failed", res, 400);
+      return;
+   });   
 }
