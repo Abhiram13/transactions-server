@@ -41,9 +41,6 @@ export function AddTransactionCheck(req: Request, res: Response, next: NextFunct
    } else if (!body.type) {
       ApiResponse<string>("Transaction type is required", res, 400);      
       return;
-   } else if (!body.to_bank_id) {
-      ApiResponse<string>("To Bank is required", res, 400); 
-      return;
    }
 
    next();
