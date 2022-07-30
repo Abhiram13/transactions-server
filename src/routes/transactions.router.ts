@@ -2,6 +2,8 @@ import express, {Router} from 'express';
 import {Query} from "../helpers/query";
 import {AddTransactionCheck} from "../helpers/payload.checks";
 import * as TransactionService from '../services/transactions.service';
+const multer = require("multer");
+const upload = multer({dest: "uploads/"});
 
 const transactionRouter: Router = express.Router();
 
@@ -26,5 +28,6 @@ transactionRouter.get("/searchById/:id", async (request, response) => {
    }
 });
 transactionRouter.get("/csv", TransactionService.csvToJson);
+transactionRouter.post("/upload", upload.single("file"), TransactionService.formData);
 
 export default transactionRouter;

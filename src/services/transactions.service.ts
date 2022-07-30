@@ -6,6 +6,7 @@ import {Request, Response} from 'express';
 import {ApiErrorHandler, ApiResponse} from "../helpers/response";
 import * as fs from 'fs';
 
+
 interface ICsvData {
    date: string;
    credit: number;
@@ -16,6 +17,12 @@ interface ICsvData {
    to_bank: string;
    actual_debit: number;
    actual_credit: number;
+}
+
+type Data = {
+   categories: string[],
+   banks: string[],
+   data: ICsvData[],
 }
 
 export async function ListofTransactions(req: Request, res: Response) {
@@ -84,7 +91,25 @@ export async function csvToJson(req: Request, res: Response): Promise<void> {
          csv.push(parse(array[i].split(",")));
       }
 
-      ApiResponse<ICsvData[]>(csv, res);
+      const banks: Set<string> = new Set([...csv.map(d => d.from_bank), ...csv.map(d => d.to_bank)]);
+      const categories: Set<string> = new Set([...csv.map(d => d.category)]);
+
+      ApiResponse<Data>({banks: Array.from(banks), categories: Array.from(categories), data: csv}, res);
+   });
+}
+
+export async function formData(req: Request, res: Response): Promise<void> {
+   return ApiErrorHandler(res, async () => {
+      const path: string = req["file"]?.path as string;
+      var data: string = fs.readFileSync(path, "utf-8");
+      console.log(path);
+      console.log(data);
+
+      fs.unlink(path, err => {
+         console.log("error: ", err);
+      });
+
+      ApiResponse<null>(null, res);
    });
 }
 
