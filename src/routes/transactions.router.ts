@@ -1,12 +1,12 @@
 import express, {Router} from 'express';
 import {Query} from "../helpers/query";
 import {AddTransactionCheck} from "../helpers/payload.checks";
-import {ListofTransactions, addTransaction} from '../services/transactions.service';
+import * as TransactionService from '../services/transactions.service';
 
 const transactionRouter: Router = express.Router();
 
-transactionRouter.get("/", ListofTransactions);
-transactionRouter.post("/add", AddTransactionCheck, addTransaction);
+transactionRouter.get("/", TransactionService.ListofTransactions);
+transactionRouter.post("/add", AddTransactionCheck, TransactionService.addTransaction);
 transactionRouter.get("/searchById/:id", async (request, response) => {
    try {
       const transactionId: string = request.params.id;
@@ -25,5 +25,6 @@ transactionRouter.get("/searchById/:id", async (request, response) => {
       response.status(400).send(e).end();
    }
 });
+transactionRouter.get("/csv", TransactionService.csvToJson);
 
 export default transactionRouter;

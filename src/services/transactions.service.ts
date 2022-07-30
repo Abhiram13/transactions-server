@@ -4,6 +4,19 @@ import {Query} from "../helpers/query";
 import {QueryResult} from "pg";
 import {Request, Response} from 'express';
 import {ApiErrorHandler, ApiResponse} from "../helpers/response";
+import * as fs from 'fs';
+
+interface ICsvData {
+   date: string;
+   credit: number;
+   debit: number;
+   category: string;
+   description: string;
+   from_bank: string;
+   to_bank: string;
+   actual_debit: number;
+   actual_credit: number;
+}
 
 export async function ListofTransactions(req: Request, res: Response) {
    ApiErrorHandler(res, async () => {
@@ -59,4 +72,38 @@ export async function addTransaction(req: Request, res: Response): Promise<void>
       ApiResponse<string>("Adding transaction failed", res, 400);
       return;
    });   
+
+}
+
+export async function csvToJson(req: Request, res: Response): Promise<void> {
+   return ApiErrorHandler(res, async () => {
+      var data: string = fs.readFileSync("FILE.csv", "utf-8");
+      var array: string[] = data.split("\r\n"); 
+      var csv: ICsvData[] = [];
+      for (let i = 1; i < array.length; i++) {
+         csv.push(parse(array[i].split(",")));
+      }
+
+      ApiResponse<ICsvData[]>(csv, res);
+   });
+}
+
+function nan(num: string): number {
+   return isNaN(Number(num)) ? 0 : Number(num);
+}
+
+function parse(array: string[]): ICsvData {
+   const [date, credit, debit, category, description, from_bank, to_bank, actual_debit, actual_credit] = array;   
+
+   return {
+      actual_credit: nan(actual_credit),
+      actual_debit: nan(actual_debit),
+      category,
+      credit: nan(credit),
+      date,
+      debit: nan(debit),
+      description,
+      from_bank,
+      to_bank
+   }
 }
