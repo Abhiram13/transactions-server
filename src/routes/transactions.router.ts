@@ -27,7 +27,6 @@ transactionRouter.get("/searchById/:id", async (request, response) => {
       response.status(400).send(e).end();
    }
 });
-transactionRouter.get("/csv", TransactionService.csvToJson);
-transactionRouter.post("/upload", upload.single("file"), TransactionService.formData);
+transactionRouter.post("/upload", upload.single("file"), TransactionService.CsvData.formData);
 
 export default transactionRouter;
