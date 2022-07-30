@@ -27,7 +27,14 @@ export async function ListofTransactions(req: Request, res: Response) {
    ApiErrorHandler(res, async () => {
       const debitSum = `CASE WHEN t.type ILIKE 'debit' THEN amount END`;
       const creditSum = `CASE WHEN t.type ILIKE 'credit' THEN amount END`;
-      const subQuery = `SELECT json_build_object('id', tr.id, 'amount', tr.amount, 'description', tr.description, 'type', tr.type) FROM transactions tr WHERE tr.date = t.date`;
+      const subQuery = `
+         SELECT json_build_object('id', tr.id, 'amount', tr.amount, 'description', tr.description, 'type', tr.type, 'category', c.category, 'from_bank', fb.name, 'to_bank', tb.name) 
+         FROM transactions tr 
+         LEFT JOIN categories c ON c.c_id = tr.category_id
+         LEFT JOIN bank fb ON fb.b_id = tr.from_bank_id         
+         LEFT JOIN bank tb ON tb.b_id = tr.to_bank_id
+         WHERE tr.date = t.date
+      `;
       const mainQuery = `
          SELECT to_char(date, 'YYYY-MM-DD') as date, COALESCE(SUM(${debitSum}), 0)::int as debit, COALESCE(SUM(${creditSum}), 0)::int as credit,
          array(${subQuery}) as transactions FROM transactions t GROUP BY t.date

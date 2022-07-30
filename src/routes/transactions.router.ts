@@ -7,7 +7,7 @@ const upload = multer({dest: "uploads/"});
 
 const transactionRouter: Router = express.Router();
 
-transactionRouter.get("/", TransactionService.ListofTransactions);
+transactionRouter.get("/list", TransactionService.ListofTransactions);
 transactionRouter.post("/add", AddTransactionCheck, TransactionService.addTransaction);
 transactionRouter.get("/searchById/:id", async (request, response) => {
    try {
