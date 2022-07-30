@@ -2,9 +2,8 @@
 export interface ITransaction {
    amount: number;
    type: string;
-   date: Date;
-   description: string;
-   color: string;
+   date: string;
+   description: string; 
    due: boolean;
    from_bank_id: number;
    category_id: number;
