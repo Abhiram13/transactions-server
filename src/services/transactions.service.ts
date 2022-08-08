@@ -4,10 +4,25 @@ import {Query} from "../helpers/query";
 import {QueryResult} from "pg";
 import {Request, Response} from 'express';
 import {ApiErrorHandler, ApiResponse} from "../helpers/response";
+import {Worker, isMainThread, workerData, parentPort, threadId, MessageChannel, MessagePort} from 'worker_threads';
+// import {fileURLToPath} from 'url';
+// import {dirname} from 'path';
 import * as fs from 'fs';
+import path from "path";
 
 type Bank = {id: number, name: string;};
 type Category = {id: number, category: string;};
+
+function thread(data: string, message: string, dirname: string, key: string) {
+   return new Promise(resolve => {
+      const worker = new Worker(dirname, {workerData: data});
+      const channel = new MessageChannel();
+      worker.postMessage({[key]: channel.port1}, [channel.port1]);
+      channel.port2.on("message", (value) => {
+         resolve(`${message}: ${value}`);
+      });
+   });
+}
 
 const months = new Map();
 months.set("January", "01")
@@ -23,8 +38,35 @@ months.set("October", "10")
 months.set("November", "11")
 months.set("December", "12")
 
-export async function ListofTransactions(req: Request, res: Response) {
+// export async function ListofTransactions(req: Request, res: Response) { 
+//    console.log(path.join(__dirname, '..', 'javascript', 'worker.js'))
+//    ApiErrorHandler(res, async () => {
+//       const debitSum = `CASE WHEN t.type ILIKE 'debit' THEN amount END`;
+//       const creditSum = `CASE WHEN t.type ILIKE 'credit' THEN amount END`;
+//       const subQuery = `
+//          SELECT json_build_object('id', tr.id, 'amount', tr.amount, 'description', tr.description, 'type', tr.type, 'category', c.category, 'from_bank', fb.name, 'to_bank', tb.name) 
+//          FROM transactions tr 
+//          LEFT JOIN categories c ON c.c_id = tr.category_id
+//          LEFT JOIN bank fb ON fb.b_id = tr.from_bank_id         
+//          LEFT JOIN bank tb ON tb.b_id = tr.to_bank_id
+//          WHERE tr.date = t.date
+//       `;
+//       const mainQuery = `
+//          SELECT to_char(date, 'YYYY-MM-DD') as date, COALESCE(SUM(${debitSum}), 0)::int as debit, COALESCE(SUM(${creditSum}), 0)::int as credit,
+//          array(${subQuery}) as transactions FROM transactions t GROUP BY t.date
+//       `;
+//       const transactions: ITransaction[] = await (await Query(mainQuery)).rows;
+//       ApiResponse<ITransaction[]>(transactions, res, 200);
+//    });
+// }
+
+export async function ListofTransactions(req: Request, res: Response) { 
    ApiErrorHandler(res, async () => {
+      // const dirname = path.join(__dirname, '..', 'javascript', 'worker.js');
+      // const x = thread('one', 'something', dirname, 'dasdassdasd');
+      // const y = thread('two', 'another', dirname, 'seconded');
+      // console.log(await x);
+      // console.log(await y);
       const debitSum = `CASE WHEN t.type ILIKE 'debit' THEN amount END`;
       const creditSum = `CASE WHEN t.type ILIKE 'credit' THEN amount END`;
       const subQuery = `
@@ -39,6 +81,8 @@ export async function ListofTransactions(req: Request, res: Response) {
          SELECT to_char(date, 'YYYY-MM-DD') as date, COALESCE(SUM(${debitSum}), 0)::int as debit, COALESCE(SUM(${creditSum}), 0)::int as credit,
          array(${subQuery}) as transactions FROM transactions t GROUP BY t.date
       `;
+
+      console.log(mainQuery);
       const transactions: ITransaction[] = await (await Query(mainQuery)).rows;
       ApiResponse<ITransaction[]>(transactions, res, 200);
    });
